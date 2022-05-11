@@ -1,17 +1,20 @@
 # microSTL
 
-## 组件
-
 - [ ] allocator
-- [ ] iterators
-- [ ] containers
-- [ ] algorithms
-- [ ] functors
-- [ ] adaptors
-
-## 测试用例
-
-- [ ] allocator
+    - [x] 简单的 allocator
+    - [ ] `alloc::allocate()`
+        - [ ] 一级配置器
+            - [ ] oom处理
+        - [ ] 二级配置器
+            - [ ] 内存池
+            - [ ] 内存池空间分配
+            - [ ] 内存池 `refill()`
+    - [ ] `alloc::deallocate()`
+        - [ ] 内存池空间释放
+    - [ ] `alloc::construct()`
+        - [ ] trivial 技法
+    - [ ] `alloc::destroy()`
+        - [ ] trivial 技法
 - [ ] iterators
 - [ ] containers
 - [ ] algorithms
