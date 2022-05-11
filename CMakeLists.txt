@@ -12,7 +12,6 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(Tests
         test/allocator.cpp
-        allocator/allocator.cpp
         allocator/allocator.h)
 
 target_link_libraries(Tests ${GTEST_BOTH_LIBRARIES})
