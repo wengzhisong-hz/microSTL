@@ -12,9 +12,9 @@
     - [ ] `alloc::deallocate()`
         - [ ] 内存池空间释放
     - [ ] `alloc::construct()`
-        - [ ] trivial 技法
+        - [ ] traits 技法
     - [ ] `alloc::destroy()`
-        - [ ] trivial 技法
+        - [ ] traits 技法
 - [ ] iterators
 - [ ] containers
 - [ ] algorithms
