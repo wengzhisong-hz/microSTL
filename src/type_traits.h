@@ -36,18 +36,6 @@ namespace MicroSTL {
      */
     template<typename Category, typename T, typename Distance = ptrdiff_t, typename Pointer = T *, typename Reference = T &>
     struct iterator {
-        using iterator_category = Category;
-        using value_type = T;
-        using difference_type = Distance;
-        using pointer = Pointer;
-        using reference = Reference;
-    };
-
-    /**
-     * traits
-     */
-    template<class T>
-    struct iterator_traits {
         /**
          * 迭代器类别，分为五类：
          * - input iterator：只读
@@ -56,24 +44,36 @@ namespace MicroSTL {
          * - bidirectional iterator：双向访问，支持读写
          * - random access iterator：随机访问，支持读写
          */
-        using iterator_category = typename T::iterator_category;
+        using iterator_category = Category;
         /**
          * 迭代器所指对象类别；
          */
-        using value_type = typename T::value_type;
+        using value_type = T;
         /**
          * 两个迭代器之间的距离；
          * 可以用来表示容器的最大容量；
          */
-        using difference_type = typename T::difference_type;
+        using difference_type = Distance;
         /**
          * 指向迭代器所指之物的指针；
          */
-        using pointer = typename T::pointer;
+        using pointer = Pointer;
         /**
          * 迭代器所指之物是否允许改变；
          * 对迭代器解引用的时候，返回的是左值还是右值；
          */
+        using reference = Reference;
+    };
+
+    /**
+     * traits
+     */
+    template<class T>
+    struct iterator_traits {
+        using iterator_category = typename T::iterator_category;
+        using value_type = typename T::value_type;
+        using difference_type = typename T::difference_type;
+        using pointer = typename T::pointer;
         using reference = typename T::reference;
     };
 
