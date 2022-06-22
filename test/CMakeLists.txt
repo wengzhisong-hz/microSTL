@@ -1,8 +1,8 @@
 find_package(GTest REQUIRED)
 
-add_executable(test_alloc memory/test_alloc.cpp)
-add_executable(test_construct memory/test_construct.cpp)
-add_executable(test_uninitialized memory/test_uninitialized.cpp)
+add_executable(test_alloc test_alloc.cpp)
+add_executable(test_construct test_construct.cpp)
+add_executable(test_uninitialized test_uninitialized.cpp)
 
 add_executable(test_type_traits test_type_traits.cpp)
 add_executable(test_iterator test_iterator.cpp)

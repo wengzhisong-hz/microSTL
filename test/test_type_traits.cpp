@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include "../src/type_traits.h"
+#include "../iterator/type_traits.h"
 
 
 using namespace std;
 
 TEST(示例, 测试相等) {
-    EXPECT_EQ(1,1);
+    EXPECT_EQ(1, 1);
 }
 
 int main(int argc, char *argv[]) {

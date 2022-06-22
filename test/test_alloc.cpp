@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../src/memory/construct.h"
+#include "../memory/alloc.h"
 
 
 using namespace std;

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../src/memory/uninitialized.h"
+#include "../memory/uninitialized.h"
 
 
 using namespace std;
