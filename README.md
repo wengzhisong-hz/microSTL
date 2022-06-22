@@ -3,10 +3,11 @@
 进度：
 
 - [ ] iterator
-    - [ ] traits技法
+    - [x] iterator_traits
+    - [x] type_tra_traits
 - [ ] allocator
-    - [ ] 第一级配空间置器
-    - [ ] 第二级空间配置器
+    - [x] constructor
+    - [ ] allocator
 - [ ] 序列式容器
     - [ ] vector
     - [ ] list
