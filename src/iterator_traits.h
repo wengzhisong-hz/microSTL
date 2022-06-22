@@ -1,5 +1,5 @@
-#ifndef MICROSTL_ITERATOR_H
-#define MICROSTL_ITERATOR_H
+#ifndef MICROSTL_ITERATOR_TRAITS_H
+#define MICROSTL_ITERATOR_TRAITS_H
 
 namespace MicroSTL::IteratorTraits {
     // --------------- 定义 Category 类型 ---------------
@@ -139,4 +139,4 @@ namespace MicroSTL::IteratorTraits {
     }
 }
 
-#endif //MICROSTL_ITERATOR_H
+#endif //MICROSTL_ITERATOR_TRAITS_H

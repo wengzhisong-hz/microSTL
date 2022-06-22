@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/iterator.h"
+#include "../src/iterator_traits.h"
 
 
 using namespace std;
