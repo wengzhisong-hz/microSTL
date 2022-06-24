@@ -3,23 +3,55 @@
 
 
 namespace MicroSTL {
-    /**
-         * 定义函数指针
-         */
-    using fn_ptr = void (*)();
-
     inline void throw_bad_alloc() {
         fprintf(stderr, "out of memory\n");
         exit(1);
     }
+    /**
+     * 定义函数指针
+     */
+    using fn_ptr = void (*)();
+    /**
+     * free list指针
+     */
+    struct block {
+        struct block *next_block;
+    };
+    /**
+     * free list阶梯值
+     */
+    static const int ALIGN = 8;
+    /**
+     * 最大block，超过这个大小则调用 AllocByMalloc
+     */
+    static const int MAX_BYTES = 128;
+    /**
+     * free list个数
+     */
+    static const int LIST_NUMBER = MAX_BYTES / ALIGN;
 
     class Alloc {
 
     };
 
     class AllocByFreeList {
+    public:
+        static void *allocate(size_t size);
 
+        static void *deallocate(void *ptr, size_t size);
+
+        static void *reallocate(void *ptr, size_t old_size, size_t new_size);
+
+    private:
+        /**
+         * free list
+         * 使用 volatile 关键字修饰，告诉编译器free list是会被某些因素修改的
+         * 编译器不会对free list的访问进行优化，从而获得访问地址的稳定性
+         */
+        static block *volatile free_list[LIST_NUMBER];
     };
+
+    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {};
 
     class AllocByMalloc {
     public:
@@ -55,7 +87,7 @@ namespace MicroSTL {
         }
 
         /**
-         * oom handler 接收一个用户自定义的 oom 处理函数，并返回原先的 oom 处理函数
+         * oom handler 接收一个用户自定义的 oom 处理函数指针，并返回原先的 oom 处理函数指针
          */
         static fn_ptr set_oom_user_handler(fn_ptr user_handler) {
             fn_ptr old_handler = oom_user_handler;

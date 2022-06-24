@@ -4,7 +4,7 @@
 | ------------------ |----------------------| -------------- | -------------- | -------------- | -------------- |
 | ✅ iterator class  | ✅ constructor        | vector         |                |                |                |
 | ✅ iterator_traits | ✅ destructor         | list           |                |                |                |
-| ✅ type_traits     | ✅ allocator(chunk)   |                |                |                |                |
+| ✅ type_traits     | ✅ allocator(malloc)  |                |                |                |                |
 |                    | allocator(free list) |                |                |                |                |
 |                    |                      |                |                |                |                |
 |                    |                      |                |                |                |                |
