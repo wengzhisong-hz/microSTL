@@ -154,7 +154,7 @@ namespace MicroSTL {
                 return AllocByMalloc::allocate(size);
             }
             // 获取到合适的list
-            block *list = free_list[get_free_list_index(size)];
+            block *volatile list = free_list[get_free_list_index(size)];
             // 如果当前list没有可用空间，则向内存池申请内存
             if (list == nullptr) {
                 void *res = refill(round_up(size));
@@ -172,16 +172,26 @@ namespace MicroSTL {
                 return AllocByMalloc::deallocate(ptr, size);
             }
             block *data = static_cast<block *>(ptr);
-            block *list = free_list[get_free_list_index(size)];
+            block *volatile list = free_list[get_free_list_index(size)];
             data->next_block = list;
             // 将ptr作为新的list头节点
             *list = *data;
         }
 
-        static void *reallocate(void *ptr, size_t old_size, size_t new_size);
+        static void *reallocate(void *ptr, size_t old_size, size_t new_size) {
+            deallocate(ptr, old_size);
+            ptr = allocate(new_size);
+            return ptr;
+        }
 
     private:
+        /**
+         * 内存池剩余空间起点
+         */
         static char *start_free;
+        /**
+         * 内存池剩余空间终点
+         */
         static char *end_free;
         static size_t heap_size;
         /**
@@ -199,15 +209,108 @@ namespace MicroSTL {
             return size / ALIGN;
         }
 
-        static void *refill(size_t size);
 
-        static void *chunk_alloc(size_t size);
+        static void *refill(size_t size) {
+            // 默认获取20个新block
+            // 如果内存池内存不足，可能小于20个
+            int block_nums = 20;
+            // chunk_alloc的block_nums为引用传递
+            char *blocks = chunk_alloc(size, block_nums);
+
+            if (block_nums == 1) {
+                return blocks;
+            }
+
+            block *volatile list = free_list[get_free_list_index(size)];
+
+            block *result = reinterpret_cast<block *>(blocks + size);
+            *list = *result;
+            block_nums--;
+
+            block *current_block = result;
+            block *pre_block;
+
+            for (int i = 0; i < block_nums; i++) {
+                pre_block = current_block;
+                current_block = reinterpret_cast<block *>(pre_block + size);
+                pre_block->next_block = current_block;
+                if (i == block_nums - 1) {
+                    current_block->next_block = nullptr;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * 内存池
+         * 一次申请，多次分配
+         */
+        static char *chunk_alloc(size_t block_size, int &block_nums) {
+            char *result;
+            size_t required_total = block_size * block_nums;
+            size_t memory_pool_bytes_left = end_free - start_free;
+
+            if (memory_pool_bytes_left >= required_total) {
+                // 如果内存池剩余内存能够能满足需求
+
+                result = start_free;
+                start_free += required_total;
+                return result;
+            }
+
+            if (memory_pool_bytes_left >= block_size) {
+                // 如果内存池剩余内存能够满足部分需求
+                // 那么就把能提供的空间都取出来
+
+                block_nums = memory_pool_bytes_left / block_size;
+                result = start_free;
+                start_free += block_size * block_nums;
+                return result;
+            }
+            // 如果内存池剩余内存连一个block都不能够满足
+
+            // todo 细化内存不足时的处理方式
+
+            // 直接从heap申请内存
+            start_free = static_cast<char *>(malloc(required_total));
+
+            if (start_free == nullptr) {
+                // 调用 AllocByMalloc，尝试 oom handler 机制能否奏效
+                start_free = static_cast<char *>(AllocByMalloc::allocate(required_total));
+            }
+            heap_size += required_total;
+            end_free = start_free + required_total;
+
+            // 内存池扩容完毕，重新尝试分配内存
+            return chunk_alloc(block_size, block_nums);
+        }
     };
 
-    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {};
+    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+    /**
+     * 适配器
+     * 默认使用AllocByFreeList进行内存分配
+     */
+    template<typename T>
     class Alloc {
+        static T *allocate(size_t size) {
+            return size == 0 ? nullptr : AllocByFreeList::allocate(size);
+        }
 
+        static T *alloc() {
+            return static_cast<T *>(AllocByFreeList::allocate(sizeof(T)));
+        }
+
+        static void deallocate(T *ptr, size_t size) {
+            if (size > 0) {
+                AllocByFreeList::deallocate(ptr, size);
+            }
+        }
+
+        static void deallocate(T *ptr) {
+            AllocByFreeList::deallocate(ptr, sizeof(T));
+        }
     };
 
 }
