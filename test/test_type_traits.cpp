@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 #include "../iterator/type_traits.h"
+#include "../iterator/iterator.h"
 
+using namespace MicroSTL;
 
-using namespace std;
 
 TEST(示例, 测试相等) {
     EXPECT_EQ(1, 1);

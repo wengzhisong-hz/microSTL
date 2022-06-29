@@ -1,35 +1,9 @@
 #ifndef MICROSTL_ITERATOR_TRAITS_H
 #define MICROSTL_ITERATOR_TRAITS_H
 
-namespace MicroSTL::IteratorTraits {
-    // --------------- 定义 Category 类型 ---------------
+#include "iterator.h"
 
-    /**
-     * 只读迭代器标记
-     */
-    struct input_iterator_tag {
-    };
-    /**
-     * 只写迭代器标记
-     */
-    struct output_iterator_tag {
-    };
-    /**
-     * 前向访问迭代器，支持读写标记
-     */
-    struct forward_iterator_tag : public input_iterator_tag {
-    };
-    /**
-     * 双向访问迭代器，支持读写标记
-     */
-    struct bidirectional_iterator_tag : public forward_iterator_tag {
-    };
-    /**
-     * 随机访问迭代器，支持读写标记
-     */
-    struct random_access_iterator_tag : public bidirectional_iterator_tag {
-    };
-
+namespace MicroSTL {
     // --------------- 定义迭代器的类型萃取 ---------------
 
     /**

@@ -1,11 +1,38 @@
 #ifndef MICROSTL_ITERATOR_H
 #define MICROSTL_ITERATOR_H
 
-namespace MicroSTL::Iterator {
+namespace MicroSTL {
+    // --------------- 定义 Category 类型 ---------------
+    /**
+     * 只读迭代器标记
+     */
+    struct input_iterator_tag {
+    };
+    /**
+     * 只写迭代器标记
+     */
+    struct output_iterator_tag {
+    };
+    /**
+     * 前向访问迭代器，支持读写标记
+     */
+    struct forward_iterator_tag : public input_iterator_tag {
+    };
+    /**
+     * 双向访问迭代器，支持读写标记
+     */
+    struct bidirectional_iterator_tag : public forward_iterator_tag {
+    };
+    /**
+     * 随机访问迭代器，支持读写标记
+     */
+    struct random_access_iterator_tag : public bidirectional_iterator_tag {
+    };
+
     // --------------- 定义迭代器原型 ---------------
 
     /**
-     * iterator 原型，所有的迭代器都应该继承这个迭代器
+     * iterator 原型，所有的迭代器都应该实现这个迭代器
      */
     template<typename Category,
             typename T,

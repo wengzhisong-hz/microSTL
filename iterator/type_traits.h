@@ -1,7 +1,7 @@
 #ifndef MICROSTL_TYPE_TRAITS_H
 #define MICROSTL_TYPE_TRAITS_H
 
-namespace MicroSTL::TypeTraits {
+namespace MicroSTL {
     /**
      * 包含该特性
      */

@@ -5,7 +5,7 @@
 #include "../iterator/type_traits.h"
 #include "../iterator/iterator_traits.h"
 
-namespace MicroSTL::Construct {
+namespace MicroSTL {
 
     // --------------- placement new 构造 ---------------
 
@@ -29,7 +29,7 @@ namespace MicroSTL::Construct {
     */
     template<typename ForwardIterator>
     inline void destroy(ForwardIterator first, ForwardIterator last) {
-        _destroy(first, last, IteratorTraits::value_type(first));
+        _destroy(first, last, value_type(first));
     }
 
     /**
@@ -37,7 +37,7 @@ namespace MicroSTL::Construct {
      */
     template<typename ForwardIterator, typename T>
     inline void _destroy(ForwardIterator first, ForwardIterator last, T *) {
-        using trivial_destructor = typename TypeTraits::type_traits<T>::has_trivial_destructor;
+        using trivial_destructor = typename type_traits<T>::has_trivial_destructor;
         _destroy(first, last, trivial_destructor());
     }
 
@@ -47,7 +47,7 @@ namespace MicroSTL::Construct {
      */
     template<typename ForwardIterator>
     inline void
-    _destroy(ForwardIterator first, ForwardIterator last, TypeTraits::true_type) {
+    _destroy(ForwardIterator first, ForwardIterator last, true_type) {
         // 什么也不做
     }
 
@@ -57,7 +57,7 @@ namespace MicroSTL::Construct {
      */
     template<typename ForwardIterator>
     inline void
-    _destroy(ForwardIterator first, ForwardIterator last, TypeTraits::false_type) {
+    _destroy(ForwardIterator first, ForwardIterator last, false_type) {
         for (; first < last; ++first) {
             destroy(&*first);
         }
