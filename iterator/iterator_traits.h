@@ -50,25 +50,26 @@ namespace MicroSTL {
     inline typename iterator_traits<Iterator>::iterator_category
     iterator_category(const Iterator &) {
         // category是一个struct（定义在iterator.h中）
-        return iterator_traits<Iterator>::iterator_category();
+        using catgory = typename iterator_traits<Iterator>::iterator_category;
+        return catgory();
     }
 
     /**
      * 萃取迭代器的 value_type
      */
     template<typename Iterator>
-    inline typename iterator_traits<Iterator>::value_type *
+    inline typename iterator_traits<Iterator>::value_type
     value_type(const Iterator &) {
-        return iterator_traits<Iterator>::value_type * (0);
+        return static_cast<typename iterator_traits<Iterator>::value_type>(0);
     }
 
     /**
      * 萃取迭代器的 distance_type
      */
     template<typename Iterator>
-    inline typename iterator_traits<Iterator>::difference_type *
+    inline typename iterator_traits<Iterator>::difference_type
     distance_type(const Iterator &) {
-        return iterator_traits<Iterator>::difference_type * (0);
+        return static_cast<typename iterator_traits<Iterator>::difference_type>(0);
     }
 }
 

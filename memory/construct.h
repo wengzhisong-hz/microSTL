@@ -3,7 +3,6 @@
 
 #include <new>
 #include "../iterator/type_traits.h"
-#include "../iterator/iterator_traits.h"
 
 namespace MicroSTL {
 

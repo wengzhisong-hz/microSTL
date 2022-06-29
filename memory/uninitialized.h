@@ -1,4 +1,8 @@
 #ifndef MICROSTL_UNINITIALIZED_H
 #define MICROSTL_UNINITIALIZED_H
 
+namespace MicroSTL {
+
+}
+
 #endif //MICROSTL_UNINITIALIZED_H

@@ -2,7 +2,7 @@
 #include "../memory/alloc.h"
 
 
-using namespace std;
+using namespace MicroSTL;
 
 TEST(示例, 测试相等) {
     EXPECT_EQ(1, 1);

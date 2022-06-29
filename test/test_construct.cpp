@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "../memory/construct.h"
 
-using namespace std;
+using namespace MicroSTL;
 
 TEST(示例, 测试相等) {
     ASSERT_EQ(1, 1);

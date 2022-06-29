@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 #include "../memory/uninitialized.h"
 
-
-using namespace std;
+using namespace MicroSTL;
 
 TEST(示例, 测试相等) {
     EXPECT_EQ(1, 1);
