@@ -58,7 +58,6 @@ std::string get_type(ptrdiff_t) {
 iterator<output_iterator_tag, int> iter1;
 iterator<forward_iterator_tag, char *> iter2;
 iterator<input_iterator_tag, const long *> iter3;
-
 iterator<output_iterator_tag, int> &iter11 = iter1;
 
 
