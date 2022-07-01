@@ -154,15 +154,16 @@ namespace MicroSTL {
                 return AllocByMalloc::allocate(size);
             }
             // 获取到合适的list
-            block *volatile list = free_list[get_free_list_index(size)];
+            block *volatile *list = free_list + get_free_list_index(size);
             // 如果当前list没有可用空间，则向内存池申请内存
-            if (list == nullptr) {
+            block *result = *list;
+            if (result == nullptr) {
                 void *res = refill(round_up(size));
                 return res;
             }
-            block *result = list;
+
             // 更新free list指针
-            list = result->next_block;
+            *list = result->next_block;
             return result;
         }
 
@@ -172,10 +173,10 @@ namespace MicroSTL {
                 return AllocByMalloc::deallocate(ptr, size);
             }
             block *data = static_cast<block *>(ptr);
-            block *volatile list = free_list[get_free_list_index(size)];
-            data->next_block = list;
+            block *volatile *list = free_list + get_free_list_index(size);
+            data->next_block = *list;
             // 将ptr作为新的list头节点
-            *list = *data;
+            *list = data;
         }
 
         static void *reallocate(void *ptr, size_t old_size, size_t new_size) {
@@ -202,13 +203,12 @@ namespace MicroSTL {
         static block *volatile free_list[LIST_NUMBER];
 
         static size_t round_up(size_t size) {
-            return (size / ALIGN) * ALIGN + ALIGN;
+            return ((size + ALIGN - 1) & ~(ALIGN - 1));
         }
 
         static size_t get_free_list_index(size_t size) {
-            return size / ALIGN;
+            return ((size + ALIGN - 1) / ALIGN - 1);
         }
-
 
         static void *refill(size_t size) {
             // 默认获取20个新block
@@ -221,22 +221,24 @@ namespace MicroSTL {
                 return blocks;
             }
 
-            block *volatile list = free_list[get_free_list_index(size)];
+            block *volatile *list = free_list + get_free_list_index(size);
+            block *result;
+            block *current_block;
+            block *next_block;
 
-            block *result = reinterpret_cast<block *>(blocks + size);
-            *list = *result;
-            block_nums--;
+            result = reinterpret_cast<block *>(blocks);
+            *list = reinterpret_cast<block *>(blocks + size);
+            next_block = *list;
 
-            block *current_block = result;
-            block *pre_block;
-
-            for (int i = 0; i < block_nums; i++) {
-                pre_block = current_block;
-                current_block = reinterpret_cast<block *>(pre_block + size);
-                pre_block->next_block = current_block;
-                if (i == block_nums - 1) {
+            for (int i = 1;; i++) {
+                current_block = next_block;
+                next_block = reinterpret_cast<block *>(reinterpret_cast<char *>(next_block) + size);
+                if (block_nums - 1 == i) {
                     current_block->next_block = nullptr;
+                    break;
                 }
+                current_block->next_block = next_block;
+
             }
             return result;
         }
@@ -249,7 +251,6 @@ namespace MicroSTL {
             char *result;
             size_t required_total = block_size * block_nums;
             size_t memory_pool_bytes_left = end_free - start_free;
-
             if (memory_pool_bytes_left >= required_total) {
                 // 如果内存池剩余内存能够能满足需求
 
@@ -272,21 +273,28 @@ namespace MicroSTL {
             // todo 细化内存不足时的处理方式
 
             // 直接从heap申请内存
-            start_free = static_cast<char *>(malloc(required_total));
+            size_t bytes_to_get = 2 * required_total + round_up(heap_size >> 4);
+            start_free = static_cast<char *>(malloc(bytes_to_get));
 
             if (start_free == nullptr) {
                 // 调用 AllocByMalloc，尝试 oom handler 机制能否奏效
                 start_free = static_cast<char *>(AllocByMalloc::allocate(required_total));
             }
-            heap_size += required_total;
-            end_free = start_free + required_total;
+            heap_size += bytes_to_get;
+            end_free = start_free + bytes_to_get;
 
             // 内存池扩容完毕，重新尝试分配内存
             return chunk_alloc(block_size, block_nums);
         }
     };
 
-    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                                               nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                                               nullptr, nullptr, nullptr, nullptr};
+
+    char *AllocByFreeList::start_free = nullptr;
+    char *AllocByFreeList::end_free = nullptr;
+    size_t AllocByFreeList::heap_size = 0;
 
     /**
      * 适配器
