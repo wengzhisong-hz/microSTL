@@ -31,35 +31,18 @@ std::string get_type(input_iterator_tag) {
 }
 
 template<>
-std::string get_type(int) {
-    return "int";
+std::string get_type(int *) {
+    return "int *";
 }
 
 template<>
-std::string get_type(bool) {
-    return "bool";
-}
-
-template<>
-std::string get_type(char *) {
-    return "char *";
-}
-
-template<>
-std::string get_type(const long *) {
-    return "const long *";
-}
-
-template<>
-std::string get_type(ptrdiff_t) {
-    return "ptrdiff_t";
+std::string get_type(ptrdiff_t *) {
+    return "ptrdiff_t *";
 }
 
 iterator<output_iterator_tag, int> iter1;
 iterator<forward_iterator_tag, char *> iter2;
-iterator<input_iterator_tag, const long *> iter3;
-iterator<output_iterator_tag, int> &iter11 = iter1;
-
+std::vector<int> iter3;
 
 TEST(iterator_traits, iterator_category) {
     EXPECT_EQ(get_type(iterator_category(iter1)), "output_iterator_tag");
@@ -70,13 +53,12 @@ TEST(iterator_traits, iterator_category) {
 }
 
 TEST(iterator_traits, value_type) {
-    EXPECT_EQ(get_type(value_type(iter11)), "int");
-    EXPECT_EQ(get_type(value_type(iter2)), "char *");
-    EXPECT_EQ(get_type(value_type(iter3)), "const long *");
+    EXPECT_EQ(get_type(value_type(iter3.begin())), "int *");
+    EXPECT_EQ(get_type(value_type(iter1)), "int *");
 }
 
 TEST(iterator_traits, distance_type) {
-    EXPECT_EQ(get_type(distance_type(iter1)), "ptrdiff_t");
+    EXPECT_EQ(get_type(distance_type(iter1)), "ptrdiff_t *");
 }
 
 int main(int argc, char *argv[]) {

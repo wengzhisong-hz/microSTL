@@ -2,6 +2,7 @@
 #define MICROSTL_CONSTRUCT_H
 
 #include <new>
+#include "../iterator/iterator_traits.h"
 #include "../iterator/type_traits.h"
 
 namespace MicroSTL {
@@ -23,21 +24,12 @@ namespace MicroSTL {
     // --------------- 接收两个迭代器指针，按类型析构 ---------------
 
     /**
-    * 析构函数
-    * 接收两个迭代器
-    */
-    template<typename ForwardIterator>
-    inline void destroy(ForwardIterator first, ForwardIterator last) {
-        _destroy(first, last, value_type(first));
-    }
-
-    /**
      * 析构辅助函数
      */
     template<typename ForwardIterator, typename T>
     inline void _destroy(ForwardIterator first, ForwardIterator last, T *) {
         using trivial_destructor = typename type_traits<T>::has_trivial_destructor;
-        _destroy(first, last, trivial_destructor());
+        _destroy_aux(first, last, trivial_destructor());
     }
 
     /**
@@ -46,7 +38,7 @@ namespace MicroSTL {
      */
     template<typename ForwardIterator>
     inline void
-    _destroy(ForwardIterator first, ForwardIterator last, true_type) {
+    _destroy_aux(ForwardIterator first, ForwardIterator last, true_type) {
         // 什么也不做
     }
 
@@ -56,10 +48,19 @@ namespace MicroSTL {
      */
     template<typename ForwardIterator>
     inline void
-    _destroy(ForwardIterator first, ForwardIterator last, false_type) {
+    _destroy_aux(ForwardIterator first, ForwardIterator last, false_type) {
         for (; first < last; ++first) {
             destroy(&*first);
         }
+    }
+
+    /**
+    * 析构函数
+    * 接收两个迭代器
+    */
+    template<typename ForwardIterator>
+    inline void destroy(ForwardIterator first, ForwardIterator last) {
+        _destroy(first, last, value_type(first));
     }
 
     // --------------- 特化的destroy版本 ---------------

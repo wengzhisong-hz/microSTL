@@ -22,7 +22,7 @@ int get_type<false_type>(false_type type) {
 }
 
 
-TEST(测试type_traits, 测试POD类型) {
+TEST(type_traits, is_POD_type) {
     using t1 = typename type_traits<int>::is_POD_type;
     using t2 = typename type_traits<char>::is_POD_type;
     using t3 = typename type_traits<int *>::is_POD_type;
