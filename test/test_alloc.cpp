@@ -44,6 +44,26 @@ TEST(AllocByMalloc, set_oom_user_handler) {
     EXPECT_EQ(temp, 1);
 }
 
+AllocByFreeList alloc;
+
+TEST(AllocByFreeList, allocate) {
+    char *ptr1 = static_cast<char *>(alloc.allocate(8));
+    char *ptr2 = static_cast<char *>(alloc.allocate(8));
+    strcpy(ptr1, "aaaaaaaaAaaaaa");
+    char ptr1_first_char = *ptr1;
+    char ptr2_first_char = *ptr2;
+    EXPECT_EQ(ptr1_first_char, 'a');
+    EXPECT_EQ(ptr2_first_char, 'A');
+}
+
+TEST(AllocByFreeList, deallocate) {
+    char *ptr = static_cast<char *>(alloc.allocate(8));
+    strcpy(ptr, "bbbbb");
+    alloc.deallocate(ptr, 8);
+    char ptr_first_char = *ptr;
+    EXPECT_NE(ptr_first_char, 'b');
+}
+
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

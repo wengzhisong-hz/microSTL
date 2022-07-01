@@ -14,6 +14,6 @@
 |--------------------|----------------------|--------------|--------------|-------------|-------------|
 | 🈚️ iterator class | ✅ constructor        | vector       |              |             |             |
 | ✅ iterator_traits  | ✅ destructor         | list         |              |             |             |
-| ✅ type_traits      | allocator(malloc)    |              |              |             |             |
+| ✅ type_traits      | ✅ allocator(malloc)  |              |              |             |             |
 |                    | allocator(free list) |              |              |             |             |
 |                    | 🈚️ alloc(包装接口)      |              |              |             |             |
