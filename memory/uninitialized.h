@@ -38,7 +38,64 @@ namespace MicroSTL {
         return current;
     }
 
+    template<typename InputIterator, typename ForwardIterator>
+    inline ForwardIterator
+    uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result) {
+        return _uninitialized_copy(first, last, result, value_type(first));
+    }
 
+    template<typename InputIterator, typename ForwardIterator, typename T>
+    inline ForwardIterator
+    _uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T *) {
+        using is_POD = typename type_traits<T>::is_POD_type;
+        return _uninitialized_copy_aux(first, last, result, is_POD());
+    }
+
+    template<typename InputIterator, typename ForwardIterator>
+    inline ForwardIterator
+    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, true_type) {
+        // todo 实现copy函数
+//        return copy(first, last, result);
+    }
+
+    template<typename InputIterator, typename ForwardIterator>
+    inline ForwardIterator
+    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, false_type) {
+        ForwardIterator current = result;
+        for (; first != last; ++first, ++current) {
+            construct(&*current, *first);
+        }
+        return current;
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj) {
+        return _uninitialized_fill(first, last, obj, value_type(first));
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    _uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj, T *) {
+        using is_POD = typename type_traits<T>::is_POD_type;
+        return _uninitialized_fill_aux(first, last, obj, is_POD());
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    _uninitialized_fill_aux(ForwardIterator first, ForwardIterator last, T &obj, true_type) {
+        // todo 实现fill函数
+//        return fill(first, last, obj);
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    _uninitialized_fill_aux(ForwardIterator first, ForwardIterator last, T &obj, false_type) {
+        ForwardIterator current = first;
+        for (; first != last; ++first) {
+            construct(&*current, obj);
+        }
+    }
 }
 
 #endif //MICROSTL_UNINITIALIZED_H
