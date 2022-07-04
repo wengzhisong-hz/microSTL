@@ -7,6 +7,7 @@
 | ✅ type_traits     | ✅ allocator(malloc)    |              |              |             |             |
 |                   | ✅ allocator(free list) |              |              |             |             |
 |                   | ✅ alloc(包装接口)          |              |              |             |             |
+|                   | ✅ uninitialized        |              |              |             |             |
 
 ## 测试覆盖
 
@@ -17,3 +18,4 @@
 | ✅ type_traits      | ✅ allocator(malloc)    |              |              |             |             |
 |                    | ✅ allocator(free list) |              |              |             |             |
 |                    | 🈚️ alloc(包装接口)        |              |              |             |             |
+|                    | ✍️ uninitialized       |              |              |             |             |

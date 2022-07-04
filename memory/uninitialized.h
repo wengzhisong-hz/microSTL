@@ -44,6 +44,18 @@ namespace MicroSTL {
         return _uninitialized_copy(first, last, result, value_type(first));
     }
 
+    // 针对 char* 的重载
+    inline char *uninitialized_copy(const char *first, const char *last, char *result) {
+        memmove(result, first, last - first);
+        return result + (last - first);
+    }
+
+    // 针对 wchar_t* 的重载
+    inline wchar_t *uninitialized_copy(const wchar_t *first, const wchar_t *last, wchar_t *result) {
+        memmove(result, first, sizeof(wchar_t) * (last - first));
+        return result + (last - first);
+    }
+
     template<typename InputIterator, typename ForwardIterator, typename T>
     inline ForwardIterator
     _uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T *) {
