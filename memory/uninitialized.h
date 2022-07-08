@@ -66,8 +66,7 @@ namespace MicroSTL {
     template<typename InputIterator, typename ForwardIterator>
     inline ForwardIterator
     _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, true_type) {
-        // todo 实现copy函数
-//        return copy(first, last, result);
+        return copy(first, last, result);
     }
 
     template<typename InputIterator, typename ForwardIterator>
@@ -96,8 +95,7 @@ namespace MicroSTL {
     template<typename ForwardIterator, typename T>
     inline void
     _uninitialized_fill_aux(ForwardIterator first, ForwardIterator last, T &obj, true_type) {
-        // todo 实现fill函数
-//        return fill(first, last, obj);
+        return fill(first, last, obj);
     }
 
     template<typename ForwardIterator, typename T>
