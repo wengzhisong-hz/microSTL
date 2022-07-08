@@ -6,6 +6,8 @@
 #include "../iterator/type_traits.h"
 
 namespace MicroSTL {
+    // --------------------- fill_n --------------------------
+
     template<typename OutputIterator, typename Size, typename T>
     OutputIterator fill_n(OutputIterator first, Size n, const T &value) {
         for (; n > 0; --n, ++first) {
@@ -13,6 +15,8 @@ namespace MicroSTL {
         }
         return first;
     }
+
+    // --------------------- fill --------------------------
 
     template<typename ForwardIterator, typename T>
     void fill(ForwardIterator first, ForwardIterator last, const T &value) {
