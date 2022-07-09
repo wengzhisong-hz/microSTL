@@ -4,6 +4,7 @@
 #include "../memory/alloc.h"
 #include "../memory/construct.h"
 #include "../algorithm/algobase.h"
+#include "../memory/uninitialized.h"
 
 namespace MicroSTL {
     template<typename T>
@@ -31,9 +32,29 @@ namespace MicroSTL {
             }
         }
 
-        void fill_initialize(size_type size, const T &value);
+        void fill_initialize(size_type size, const T &value) {
+            start = allocate_and_fill(size, value);
+            finish = start + size;
+            end_of_storage = finish;
+        }
 
-        void insert_aux(iterator position, const T &obj);
+        void insert_aux(iterator position, const T &obj) {
+            if (finish != end_of_storage) {
+                construct(finish, *(finish - 1));
+                ++finish;
+                T obj_copy = obj;
+                copy_backward(position, finish - 2, finish - 1);
+                *position = obj_copy;
+            }
+        }
+
+        void copy_backward();
+
+        iterator allocate_and_fill(size_type size, const T &value) {
+            iterator result = allocator::allocate(size);
+            uninitialized_fill_n(result, size, value);
+            return result;
+        }
 
     public:
         iterator begin() {
