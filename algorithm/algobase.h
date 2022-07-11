@@ -74,7 +74,7 @@ namespace MicroSTL {
     struct copy_dispatch<T *, T *> {
         T *operator()(T *first, T *last, T *result) {
             using operator_type = typename type_traits<T>::has_trivial_assignment_operator;
-            return _copy(first, last, result, operator_type());
+            return _copy_t(first, last, result, operator_type());
         }
     };
 
@@ -122,6 +122,95 @@ namespace MicroSTL {
     _copy_t(const T *first, const T *last, T *result, false_type) {
         return _copy_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
     }
+
+    // --------------------- copy backward --------------------------
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    inline BidirectionalIterator2
+    copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
+
+    }
+
+    inline char *
+    copy_backward(char *first, char *last, char *result) {
+        auto len = last - first;
+        memmove(result - len, first, len);
+        return result - len;
+    }
+
+    inline wchar_t *
+    copy_backward(wchar_t *first, wchar_t *last, wchar_t *result) {
+        auto len = sizeof(wchar_t) * (last - first);
+        memmove(result - len, first, len);
+        return result - len;
+    }
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    struct copy_backward_dispatch {
+        BidirectionalIterator2
+        operator()(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
+            return _copy_backward(first, last, result, iterator_category(first));
+        }
+    };
+
+    template<typename T>
+    struct copy_backward_dispatch<T *, T *> {
+        T *operator()(T *first, T *last, T *result) {
+            using operator_type = typename type_traits<T>::has_trivial_assignment_operator;
+            return _copy_backward_t(first, last, result, operator_type());
+        }
+    };
+
+    template<typename T>
+    struct copy_backward_dispatch<const T *, T *> {
+        T *operator()(T *first, T *last, T *result) {
+            using operator_type = typename type_traits<T>::has_trivial_assignment_operator;
+            return _copy_backward_t(first, last, result, operator_type());
+        }
+    };
+
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    inline BidirectionalIterator2
+    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                   bidirectional_iterator_tag) {
+        for (; last != first; --last, --result) {
+            *result = *last;
+        }
+        return result;
+    }
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    inline BidirectionalIterator2
+    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                   random_access_iterator_tag) {
+        return _copy_backward_d(first, last, result, distance_type(first));
+    }
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2, typename Distance>
+    inline BidirectionalIterator2
+    _copy_backward_d(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                     Distance *) {
+        for (Distance distance = last - first; distance > 0; --distance, --result, --last) {
+            *result = *last;
+        }
+        return result;
+    }
+
+    template<typename T>
+    inline T *
+    _copy_backward_t(const T *first, const T *last, T *result, true_type) {
+        auto len = sizeof(T) * (last - first);
+        memmove(result - len, first, len);
+        return result - len;
+    }
+
+    template<typename T>
+    inline T *
+    _copy_backward_t(const T *first, const T *last, T *result, false_type) {
+        return _copy_backward_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
+    }
+
 }
 
 #endif //MICROSTL_ALGOBASE_H

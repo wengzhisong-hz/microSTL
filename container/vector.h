@@ -45,6 +45,32 @@ namespace MicroSTL {
                 T obj_copy = obj;
                 copy_backward(position, finish - 2, finish - 1);
                 *position = obj_copy;
+            } else {
+                const size_type old_size = size();
+                // 扩展为原先空间的2倍
+                const size_type len = old_size != 0 ? 2 * old_size : 1;
+                iterator new_start = allocator::allocate(len);
+                iterator new_finish = new_start;
+
+
+                // commit or rollback
+                try {
+                    new_finish = uninitialized_copy(start, position, new_start);
+                    construct(new_finish, obj);
+                    ++new_finish;
+                    new_finish = uninitialized_copy(position, finish, new_finish);
+                } catch (...) {
+                    destroy(new_start, new_finish);
+                    allocator::deallocate(new_start, len);
+                    throw;
+                }
+
+                destroy(begin(), end());
+                deallocate();
+
+                start = new_start;
+                finish = new_finish;
+                end_of_storage = new_start + len;
             }
         }
 
