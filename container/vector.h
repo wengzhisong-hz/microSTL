@@ -204,7 +204,7 @@ namespace MicroSTL {
                     }
                 } else {
                     // 空间不足
-                    const size_type old_size = size();
+                    const size_type old_size = this->size();
                     const size_type len = old_size + std::max(old_size, size);
                     iterator new_start = allocator::allocate(len);
                     iterator new_finish = new_start;
