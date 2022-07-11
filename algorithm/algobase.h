@@ -123,12 +123,16 @@ namespace MicroSTL {
         return _copy_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
     }
 
+    /**
+     * 逻辑同copy
+     */
+
     // --------------------- copy backward --------------------------
 
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
     inline BidirectionalIterator2
     copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
-
+        return copy_backward_dispatch<BidirectionalIterator1, BidirectionalIterator2>()(first, last, result);
     }
 
     inline char *

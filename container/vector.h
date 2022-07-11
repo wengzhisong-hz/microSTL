@@ -74,8 +74,6 @@ namespace MicroSTL {
             }
         }
 
-        void copy_backward();
-
         iterator allocate_and_fill(size_type size, const T &value) {
             iterator result = allocator::allocate(size);
             uninitialized_fill_n(result, size, value);
@@ -161,7 +159,16 @@ namespace MicroSTL {
             return position;
         }
 
-        iterator erase(iterator first, iterator last);
+        iterator erase(iterator first, iterator last) {
+            iterator iter = copy(last, finish, first);
+            destroy(iter, finish);
+            finish = finish - (last - first);
+            return first;
+        }
+
+        void clear() {
+            erase(begin(), end());
+        }
 
         void resize(size_type new_size, const T &obj) {
             if (new_size < size()) {
@@ -175,11 +182,54 @@ namespace MicroSTL {
             return (resize(size, T()));
         }
 
-        void clear() {
-            erase(begin(), end());
-        }
+        void insert(iterator position, size_type size, const T &obj) {
+            if (size != 0) {
+                if (size_type(end_of_storage - finish) >= size) {
+                    // 空间够用
+                    T obj_copy = obj;
+                    const size_type elements_after = finish - position;
+                    iterator old_finish = finish;
 
-        void insert(iterator position, size_type size, const T &obj);
+                    if (elements_after > size) {
+                        uninitialized_copy(finish - size, finish, finish);
+                        finish += size;
+                        copy_backward(position, old_finish - size, old_finish);
+                        fill(position, position + size, obj_copy);
+                    } else {
+                        uninitialized_fill_n(finish, size - elements_after, obj_copy);
+                        finish += size - elements_after;
+                        uninitialized_copy(position, old_finish, finish);
+                        finish += elements_after;
+                        fill(position, old_finish, obj_copy);
+                    }
+                } else {
+                    // 空间不足
+                    const size_type old_size = size();
+                    const size_type len = old_size + std::max(old_size, size);
+                    iterator new_start = allocator::allocate(len);
+                    iterator new_finish = new_start;
+
+                    try {
+                        // 先拷贝一部分
+                        new_finish = uninitialized_copy(start, position, new_start);
+                        // 再插入
+                        new_finish = uninitialized_fill_n(new_finish, size, obj);
+                        // 拷贝剩下的
+                        new_finish = uninitialized_copy(position, finish, new_finish);
+                    } catch (...) {
+                        destroy(new_start, new_finish);
+                        allocator::deallocate(new_start, len);
+                        throw;
+                    }
+
+                    destroy(start, finish);
+                    deallocate();
+                    start = new_start;
+                    finish = new_finish;
+                    end_of_storage = new_start + len;
+                }
+            }
+        }
     };
 }
 
