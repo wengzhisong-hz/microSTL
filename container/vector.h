@@ -52,7 +52,6 @@ namespace MicroSTL {
                 iterator new_start = allocator::allocate(len);
                 iterator new_finish = new_start;
 
-
                 // commit or rollback
                 try {
                     new_finish = uninitialized_copy(start, position, new_start);
@@ -81,11 +80,11 @@ namespace MicroSTL {
         }
 
     public:
-        iterator begin() {
+        iterator begin() const {
             return start;
         };
 
-        iterator end() {
+        iterator end() const {
             return finish;
         };
 
@@ -174,7 +173,7 @@ namespace MicroSTL {
             if (new_size < size()) {
                 erase(begin() + new_size, end());
             } else {
-                insert(end(), new_size, obj);
+                insert(end(), new_size - size(), obj);
             }
         }
 

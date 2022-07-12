@@ -170,10 +170,12 @@ namespace MicroSTL {
         static void deallocate(void *ptr, size_t size) {
             // 如果 > 128byte则调用free
             if (size > MAX_BYTES) {
-                return AllocByMalloc::deallocate(ptr, size);
+                AllocByMalloc::deallocate(ptr, size);
+                return;
             }
             block *data = static_cast<block *>(ptr);
-            block *volatile *list = free_list + get_free_list_index(size);
+            block *volatile *list;
+            list = free_list + get_free_list_index(size);
             data->next_block = *list;
             // 将ptr作为新的list头节点
             *list = data;
@@ -302,17 +304,18 @@ namespace MicroSTL {
      */
     template<typename T>
     class Alloc {
+    public:
         static T *allocate(size_t size) {
-            return size == 0 ? nullptr : AllocByFreeList::allocate(size);
+            return size == 0 ? nullptr : static_cast<T * >(AllocByFreeList::allocate(size));
         }
 
-        static T *alloc() {
+        static T *allocate() {
             return static_cast<T *>(AllocByFreeList::allocate(sizeof(T)));
         }
 
         static void deallocate(T *ptr, size_t size) {
-            if (size > 0) {
-                AllocByFreeList::deallocate(ptr, size);
+            if (size != 0) {
+                AllocByFreeList::deallocate(ptr, size * sizeof(T));
             }
         }
 

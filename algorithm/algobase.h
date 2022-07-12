@@ -44,23 +44,41 @@ namespace MicroSTL {
 
     // --------------------- copy --------------------------
 
+    template<typename RandomAccessIterator, typename OutputIterator, typename Distance>
+    inline OutputIterator
+    _copy_d(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, Distance *) {
+        for (Distance distance = last - first; distance > 0; --distance, ++result, ++first) {
+            *result = *first;
+        }
+        return result;
+    }
+
+    template<typename T>
+    inline T *
+    _copy_t(const T *first, const T *last, T *result, true_type) {
+        memmove(result, first, sizeof(T) * (last - first));
+        return result + (last - first);
+    }
+
+    template<typename T>
+    inline T *
+    _copy_t(const T *first, const T *last, T *result, false_type) {
+        return _copy_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
+    }
 
     template<typename InputIterator, typename OutputIterator>
     inline OutputIterator
-    copy(InputIterator first, InputIterator last, OutputIterator result) {
-        return copy_dispatch<InputIterator, OutputIterator>()(first, last, result);
+    _copy(InputIterator first, InputIterator last, OutputIterator result, input_iterator_tag) {
+        for (; first != last; ++result, ++first) {
+            *result = *first;
+        }
+        return result;
     }
 
-    inline char *
-    copy(char *first, char *last, char *result) {
-        memmove(result, first, last - first);
-        return result + (last - first);
-    }
-
-    inline wchar_t *
-    copy(wchar_t *first, wchar_t *last, wchar_t *result) {
-        memmove(result, first, sizeof(wchar_t) * (last - first));
-        return result + (last - first);
+    template<typename RandomAccessIterator, typename OutputIterator>
+    inline OutputIterator
+    _copy(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, random_access_iterator_tag) {
+        return _copy_d(first, last, result, distance_type(first));
     }
 
     template<typename InputIterator, typename OutputIterator>
@@ -88,39 +106,20 @@ namespace MicroSTL {
 
     template<typename InputIterator, typename OutputIterator>
     inline OutputIterator
-    _copy(InputIterator first, InputIterator last, OutputIterator result, input_iterator_tag) {
-        for (; first != last; ++result, ++first) {
-            *result = *first;
-        }
-        return result;
+    copy(InputIterator first, InputIterator last, OutputIterator result) {
+        return copy_dispatch<InputIterator, OutputIterator>()(first, last, result);
     }
 
-    template<typename RandomAccessIterator, typename OutputIterator>
-    inline OutputIterator
-    _copy(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, random_access_iterator_tag) {
-        return _copy_d(first, last, result, distance_type(first));
-    }
-
-    template<typename RandomAccessIterator, typename OutputIterator, typename Distance>
-    inline OutputIterator
-    _copy_d(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, Distance *) {
-        for (Distance distance = last - first; distance > 0; --distance, ++result, ++first) {
-            *result = *first;
-        }
-        return result;
-    }
-
-    template<typename T>
-    inline T *
-    _copy_t(const T *first, const T *last, T *result, true_type) {
-        memmove(result, first, sizeof(T) * (last - first));
+    inline char *
+    copy(char *first, char *last, char *result) {
+        memmove(result, first, last - first);
         return result + (last - first);
     }
 
-    template<typename T>
-    inline T *
-    _copy_t(const T *first, const T *last, T *result, false_type) {
-        return _copy_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
+    inline wchar_t *
+    copy(wchar_t *first, wchar_t *last, wchar_t *result) {
+        memmove(result, first, sizeof(wchar_t) * (last - first));
+        return result + (last - first);
     }
 
     /**
@@ -129,24 +128,28 @@ namespace MicroSTL {
 
     // --------------------- copy backward --------------------------
 
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2, typename Distance>
     inline BidirectionalIterator2
-    copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
-        return copy_backward_dispatch<BidirectionalIterator1, BidirectionalIterator2>()(first, last, result);
+    _copy_backward_d(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                     Distance *) {
+        for (Distance distance = last - first; distance > 0; --distance, --result, --last) {
+            *result = *last;
+        }
+        return result;
     }
 
-    inline char *
-    copy_backward(char *first, char *last, char *result) {
-        auto len = last - first;
+    template<typename T>
+    inline T *
+    _copy_backward_t(const T *first, const T *last, T *result, true_type) {
+        auto len = sizeof(T) * (last - first);
         memmove(result - len, first, len);
         return result - len;
     }
 
-    inline wchar_t *
-    copy_backward(wchar_t *first, wchar_t *last, wchar_t *result) {
-        auto len = sizeof(wchar_t) * (last - first);
-        memmove(result - len, first, len);
-        return result - len;
+    template<typename T>
+    inline T *
+    _copy_backward_t(const T *first, const T *last, T *result, false_type) {
+        return _copy_backward_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
     }
 
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
@@ -191,30 +194,25 @@ namespace MicroSTL {
         return _copy_backward_d(first, last, result, distance_type(first));
     }
 
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2, typename Distance>
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
     inline BidirectionalIterator2
-    _copy_backward_d(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
-                     Distance *) {
-        for (Distance distance = last - first; distance > 0; --distance, --result, --last) {
-            *result = *last;
-        }
-        return result;
+    copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
+        return copy_backward_dispatch<BidirectionalIterator1, BidirectionalIterator2>()(first, last, result);
     }
 
-    template<typename T>
-    inline T *
-    _copy_backward_t(const T *first, const T *last, T *result, true_type) {
-        auto len = sizeof(T) * (last - first);
+    inline char *
+    copy_backward(char *first, char *last, char *result) {
+        auto len = last - first;
         memmove(result - len, first, len);
         return result - len;
     }
 
-    template<typename T>
-    inline T *
-    _copy_backward_t(const T *first, const T *last, T *result, false_type) {
-        return _copy_backward_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
+    inline wchar_t *
+    copy_backward(wchar_t *first, wchar_t *last, wchar_t *result) {
+        auto len = sizeof(wchar_t) * (last - first);
+        memmove(result - len, first, len);
+        return result - len;
     }
-
 }
 
 #endif //MICROSTL_ALGOBASE_H

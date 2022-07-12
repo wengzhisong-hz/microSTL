@@ -7,11 +7,17 @@
 #include "construct.h"
 
 namespace MicroSTL {
+
+    // ----------------------- uninitialized_fill_n ----------------------
+
     template<typename ForwardIterator, typename Size, typename T>
     inline ForwardIterator
-    uninitialized_fill_n(ForwardIterator first, Size size, T &obj) {
-        // 获取迭代器的类型
-        return _uninitialized_fill_n(first, size, obj, value_type(first));
+    _uninitialized_fill_n_aux(ForwardIterator first, Size size, T &obj, false_type) {
+        ForwardIterator current = first;
+        for (; size > 0; --size, ++current) {
+            construct(&*current, obj);
+        }
+        return current;
     }
 
     template<typename ForwardIterator, typename Size, typename T, typename T1>
@@ -30,12 +36,34 @@ namespace MicroSTL {
 
     template<typename ForwardIterator, typename Size, typename T>
     inline ForwardIterator
-    _uninitialized_fill_n_aux(ForwardIterator first, Size size, T &obj, false_type) {
-        ForwardIterator current = first;
-        for (; size > 0; --size, ++current) {
-            construct(&*current, obj);
+    uninitialized_fill_n(ForwardIterator first, Size size, T &obj) {
+        // 获取迭代器的类型
+        return _uninitialized_fill_n(first, size, obj, value_type(first));
+    }
+
+    // ----------------------- uninitialized_copy ----------------------
+
+    template<typename InputIterator, typename ForwardIterator>
+    inline ForwardIterator
+    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, true_type) {
+        return copy(first, last, result);
+    }
+
+    template<typename InputIterator, typename ForwardIterator>
+    inline ForwardIterator
+    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, false_type) {
+        ForwardIterator current = result;
+        for (; first != last; ++first, ++current) {
+            construct(&*current, *first);
         }
         return current;
+    }
+
+    template<typename InputIterator, typename ForwardIterator, typename T>
+    inline ForwardIterator
+    _uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T *) {
+        using is_POD = typename type_traits<T>::is_POD_type;
+        return _uninitialized_copy_aux(first, last, result, is_POD());
     }
 
     template<typename InputIterator, typename ForwardIterator>
@@ -56,41 +84,7 @@ namespace MicroSTL {
         return result + (last - first);
     }
 
-    template<typename InputIterator, typename ForwardIterator, typename T>
-    inline ForwardIterator
-    _uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T *) {
-        using is_POD = typename type_traits<T>::is_POD_type;
-        return _uninitialized_copy_aux(first, last, result, is_POD());
-    }
-
-    template<typename InputIterator, typename ForwardIterator>
-    inline ForwardIterator
-    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, true_type) {
-        return copy(first, last, result);
-    }
-
-    template<typename InputIterator, typename ForwardIterator>
-    inline ForwardIterator
-    _uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, false_type) {
-        ForwardIterator current = result;
-        for (; first != last; ++first, ++current) {
-            construct(&*current, *first);
-        }
-        return current;
-    }
-
-    template<typename ForwardIterator, typename T>
-    inline void
-    uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj) {
-        return _uninitialized_fill(first, last, obj, value_type(first));
-    }
-
-    template<typename ForwardIterator, typename T>
-    inline void
-    _uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj, T *) {
-        using is_POD = typename type_traits<T>::is_POD_type;
-        return _uninitialized_fill_aux(first, last, obj, is_POD());
-    }
+    // ----------------------- uninitialized_fill ----------------------
 
     template<typename ForwardIterator, typename T>
     inline void
@@ -105,6 +99,19 @@ namespace MicroSTL {
         for (; first != last; ++first) {
             construct(&*current, obj);
         }
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    _uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj, T *) {
+        using is_POD = typename type_traits<T>::is_POD_type;
+        return _uninitialized_fill_aux(first, last, obj, is_POD());
+    }
+
+    template<typename ForwardIterator, typename T>
+    inline void
+    uninitialized_fill(ForwardIterator first, ForwardIterator last, T &obj) {
+        return _uninitialized_fill(first, last, obj, value_type(first));
     }
 }
 
