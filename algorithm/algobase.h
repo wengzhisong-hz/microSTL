@@ -141,15 +141,32 @@ namespace MicroSTL {
     template<typename T>
     inline T *
     _copy_backward_t(const T *first, const T *last, T *result, true_type) {
-        auto len = sizeof(T) * (last - first);
-        memmove(result - len, first, len);
-        return result - len;
+        size_t len = sizeof(T) * (last - first);
+        memmove(result - (last - first), first, len);
+        return result - (last - first);
     }
 
     template<typename T>
     inline T *
     _copy_backward_t(const T *first, const T *last, T *result, false_type) {
         return _copy_backward_d(first, last, result, static_cast<ptrdiff_t *>(nullptr));
+    }
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    inline BidirectionalIterator2
+    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                   bidirectional_iterator_tag) {
+        for (; last != first; --last, --result) {
+            *result = *last;
+        }
+        return result;
+    }
+
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    inline BidirectionalIterator2
+    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
+                   random_access_iterator_tag) {
+        return _copy_backward_d(first, last, result, distance_type(first));
     }
 
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
@@ -176,24 +193,6 @@ namespace MicroSTL {
         }
     };
 
-
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-    inline BidirectionalIterator2
-    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
-                   bidirectional_iterator_tag) {
-        for (; last != first; --last, --result) {
-            *result = *last;
-        }
-        return result;
-    }
-
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-    inline BidirectionalIterator2
-    _copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result,
-                   random_access_iterator_tag) {
-        return _copy_backward_d(first, last, result, distance_type(first));
-    }
-
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
     inline BidirectionalIterator2
     copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
@@ -202,16 +201,15 @@ namespace MicroSTL {
 
     inline char *
     copy_backward(char *first, char *last, char *result) {
-        auto len = last - first;
-        memmove(result - len, first, len);
-        return result - len;
+        memmove(result - (last - first), first, (last - first));
+        return result - (last - first);
     }
 
     inline wchar_t *
     copy_backward(wchar_t *first, wchar_t *last, wchar_t *result) {
-        auto len = sizeof(wchar_t) * (last - first);
-        memmove(result - len, first, len);
-        return result - len;
+        size_t len = sizeof(wchar_t) * (last - first);
+        memmove(result - (last - first), first, len);
+        return result - (last - first);
     }
 }
 

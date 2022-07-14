@@ -72,10 +72,10 @@ TEST(vector, resize) {
 
 TEST(vector, insert) {
     vector<int> vec;
-    for (int i = 0; i <= 80; i++) {
+    for (int i = 0; i <= 1000; i++) {
         vec.push_back(i);
     }
-    vec.insert(vec.begin() + 7, 10, 999);
+    vec.insert(vec.begin() + 10, 10, 999);
     for (auto item: vec) {
         std::cout << item << ", ";
     }

@@ -232,6 +232,7 @@ namespace MicroSTL {
             end_of_storage = new_start + len;
         }
     }
+
 }
 
 #endif //MICROSTL_VECTOR_H
