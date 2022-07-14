@@ -25,17 +25,25 @@ TEST(vector, pop_back) {
 }
 
 TEST(vector, push_back) {
-    vector<int> vec;
-    vec.push_back(1);
-    vec.push_back(2);
-    vec.push_back(3);
-    vec.push_back(4);
-    vec.push_back(5);
-    EXPECT_EQ(vec[0], 1);
-    EXPECT_EQ(vec[1], 2);
-    EXPECT_EQ(vec[2], 3);
-    EXPECT_EQ(vec[3], 4);
-    EXPECT_EQ(vec[4], 5);
+    vector<int> vec1;
+    for (int i = 0; i < 1000; i++) {
+        vec1.push_back(i);
+        EXPECT_EQ(vec1[i], i);
+    }
+
+    struct obj {
+        int a = 1;
+        bool b = false;
+        long c = 100;
+    };
+
+    vector<obj> vec2;
+    for (int i = 0; i < 1000; i++) {
+        obj temp_obj;
+        temp_obj.a = i;
+        vec2.push_back(temp_obj);
+        EXPECT_EQ(vec2[i].a, i);
+    }
 }
 
 TEST(vector, erase) {
@@ -72,28 +80,11 @@ TEST(vector, resize) {
 
 TEST(vector, insert) {
     vector<int> vec;
-    for (int i = 0; i <= 1000; i++) {
+    for (int i = 0; i <= 10; i++) {
         vec.push_back(i);
     }
-    vec.insert(vec.begin() + 10, 10, 999);
-    for (auto item: vec) {
-        std::cout << item << ", ";
-    }
-    // todo deallocate bug & >128 内存分配bug
-//    for (int i = 0; i <= 2; i++) {
-//        if (vec[i] != i) {
-//            std::cout << i << ", ";
-//        }
-//    }
-
-
-    // 空间充足 elements_after > size
-
-
-    // 空间充足 elements_after < size
-
-    // 空间不足
-
+    vec.insert(vec.begin() + 5, 1, 999);
+    EXPECT_EQ(*(vec.begin() + 5), 999);
 }
 
 
