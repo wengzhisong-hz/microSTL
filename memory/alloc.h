@@ -134,29 +134,21 @@ namespace MicroSTL {
      */
     static const int LIST_NUMBER = MAX_BYTES / ALIGN;
 
-    /**
-     * free list指针
-     * 每个block为8byte，即上面我们定义的 ALIGN 大小
-     * 这种做法，节约了一个指针的额外空间
-     */
-    union block {
-        // 指针为8byte
-        union block *next_block;
-        // data类型所占空间只要小于8byte即可
-        char data;
-    };
-
     class AllocByFreeList {
     public:
         static void *allocate(size_t size) {
+            // 获取到合适的list
+            block *volatile *list;
+            // 如果当前list没有可用空间，则向内存池申请内存
+            block *result;
             // 如果 > 128byte则调用malloc直接进行内存分配
-            if (size > MAX_BYTES) {
+            if (size > static_cast<size_t>(MAX_BYTES)) {
                 return AllocByMalloc::allocate(size);
             }
-            // 获取到合适的list
-            block *volatile *list = free_list + get_free_list_index(size);
-            // 如果当前list没有可用空间，则向内存池申请内存
-            block *result = *list;
+
+            list = free_list + get_free_list_index(size);
+            result = *list;
+
             if (result == nullptr) {
                 void *res = refill(round_up(size));
                 return res;
@@ -168,17 +160,17 @@ namespace MicroSTL {
         }
 
         static void deallocate(void *ptr, size_t size) {
-            // 如果 > 128byte则调用free
-            if (size > MAX_BYTES) {
-                AllocByMalloc::deallocate(ptr, size);
-                return;
-            }
             block *data = static_cast<block *>(ptr);
             block *volatile *list;
-            list = free_list + get_free_list_index(size);
-            data->next_block = *list;
-            // 将ptr作为新的list头节点
-            *list = data;
+            // 如果 > 128byte则调用free
+            if (size > static_cast<size_t>(MAX_BYTES)) {
+                AllocByMalloc::deallocate(ptr, size);
+            } else {
+                list = free_list + get_free_list_index(size);
+                data->next_block = *list;
+                // 将ptr作为新的list头节点
+                *list = data;
+            }
         }
 
         static void *reallocate(void *ptr, size_t old_size, size_t new_size) {
@@ -188,6 +180,17 @@ namespace MicroSTL {
         }
 
     private:
+        /**
+         * free list指针
+         * 每个block为8byte，即上面我们定义的 ALIGN 大小
+         * 这种做法，节约了一个指针的额外空间
+         */
+        union block {
+            // 指针为8byte
+            union block *next_block;
+            // data类型所占空间只要小于8byte即可
+            char data[1];
+        };
         /**
          * 内存池剩余空间起点
          */
@@ -219,18 +222,19 @@ namespace MicroSTL {
             // chunk_alloc的block_nums为引用传递
             char *blocks = chunk_alloc(size, block_nums);
 
-            if (block_nums == 1) {
-                return blocks;
-            }
-
-            block *volatile *list = free_list + get_free_list_index(size);
+            block *volatile *list;
             block *result;
             block *current_block;
             block *next_block;
 
+            if (block_nums == 1) {
+                return blocks;
+            }
+
+            list = free_list + get_free_list_index(size);
+
             result = reinterpret_cast<block *>(blocks);
-            *list = reinterpret_cast<block *>(blocks + size);
-            next_block = *list;
+            *list = next_block = reinterpret_cast<block *>(blocks + size);
 
             for (int i = 1;; i++) {
                 current_block = next_block;
@@ -240,7 +244,6 @@ namespace MicroSTL {
                     break;
                 }
                 current_block->next_block = next_block;
-
             }
             return result;
         }
@@ -290,9 +293,10 @@ namespace MicroSTL {
         }
     };
 
-    block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                                               nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                                               nullptr, nullptr, nullptr, nullptr};
+    AllocByFreeList::block *volatile AllocByFreeList::free_list[LIST_NUMBER] = {nullptr, nullptr, nullptr, nullptr,
+                                                                                nullptr, nullptr, nullptr, nullptr,
+                                                                                nullptr, nullptr, nullptr, nullptr,
+                                                                                nullptr, nullptr, nullptr, nullptr};
 
     char *AllocByFreeList::start_free = nullptr;
     char *AllocByFreeList::end_free = nullptr;
@@ -306,7 +310,7 @@ namespace MicroSTL {
     class Alloc {
     public:
         static T *allocate(size_t size) {
-            return size == 0 ? nullptr : static_cast<T * >(AllocByFreeList::allocate(size));
+            return size == 0 ? nullptr : static_cast<T * >(AllocByFreeList::allocate(size * sizeof(T)));
         }
 
         static T *allocate() {

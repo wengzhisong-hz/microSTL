@@ -38,40 +38,7 @@ namespace MicroSTL {
             end_of_storage = finish;
         }
 
-        void insert_aux(iterator position, const T &obj) {
-            if (finish != end_of_storage) {
-                construct(finish, *(finish - 1));
-                ++finish;
-                T obj_copy = obj;
-                copy_backward(position, finish - 2, finish - 1);
-                *position = obj_copy;
-            } else {
-                const size_type old_size = size();
-                // 扩展为原先空间的2倍
-                const size_type len = old_size != 0 ? 2 * old_size : 1;
-                iterator new_start = allocator::allocate(len);
-                iterator new_finish = new_start;
-
-                // commit or rollback
-                try {
-                    new_finish = uninitialized_copy(start, position, new_start);
-                    construct(new_finish, obj);
-                    ++new_finish;
-                    new_finish = uninitialized_copy(position, finish, new_finish);
-                } catch (...) {
-                    destroy(new_start, new_finish);
-                    allocator::deallocate(new_start, len);
-                    throw;
-                }
-
-                destroy(begin(), end());
-                deallocate();
-
-                start = new_start;
-                finish = new_finish;
-                end_of_storage = new_start + len;
-            }
-        }
+        void insert_aux(iterator position, const T &obj);
 
         iterator allocate_and_fill(size_type size, const T &value) {
             iterator result = allocator::allocate(size);
@@ -80,23 +47,23 @@ namespace MicroSTL {
         }
 
     public:
-        iterator begin() const {
+        iterator begin() {
             return start;
         };
 
-        iterator end() const {
+        iterator end() {
             return finish;
         };
 
-        size_type size() const {
+        size_type size() {
             return size_type(end() - begin());
         }
 
-        size_type capacity() const {
+        size_type capacity() {
             return size_type(end_of_storage - begin());
         }
 
-        bool empty() const {
+        bool empty() {
             return begin() == end();
         }
 
@@ -230,6 +197,41 @@ namespace MicroSTL {
             }
         }
     };
+
+    template<typename T>
+    void vector<T>::insert_aux(vector::iterator position, const T &obj) {
+        if (finish != end_of_storage) {
+            construct(finish, *(finish - 1));
+            ++finish;
+            T obj_copy = obj;
+            copy_backward(position, finish - 2, finish - 1);
+            *position = obj_copy;
+        } else {
+            const size_type old_size = size();
+            // 扩展为原先空间的2倍
+            const size_type len = old_size != 0 ? 2 * old_size : 1;
+            iterator new_start = allocator::allocate(len);
+            iterator new_finish = new_start;
+
+            // commit or rollback
+            try {
+                new_finish = uninitialized_copy(start, position, new_start);
+                construct(new_finish, obj);
+                ++new_finish;
+                new_finish = uninitialized_copy(position, finish, new_finish);
+            } catch (...) {
+                destroy(new_start, new_finish);
+                allocator::deallocate(new_start, len);
+                throw;
+            }
+
+            destroy(begin(), end());
+            deallocate();
+            start = new_start;
+            finish = new_finish;
+            end_of_storage = new_start + len;
+        }
+    }
 }
 
 #endif //MICROSTL_VECTOR_H

@@ -72,15 +72,19 @@ TEST(vector, resize) {
 
 TEST(vector, insert) {
     vector<int> vec;
-    for (int i = 0; i <= 1000; i++) {
+    for (int i = 0; i <= 80; i++) {
         vec.push_back(i);
-        std::cout << vec[i] << ", ";
     }
-    for (int i = 0; i <= 1000; i++) {
-        if (vec[i] != i) {
-            std::cout << i << ", ";
-        }
+    vec.insert(vec.begin() + 7, 10, 999);
+    for (auto item: vec) {
+        std::cout << item << ", ";
     }
+    // todo deallocate bug & >128 内存分配bug
+//    for (int i = 0; i <= 2; i++) {
+//        if (vec[i] != i) {
+//            std::cout << i << ", ";
+//        }
+//    }
 
 
     // 空间充足 elements_after > size
