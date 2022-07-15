@@ -32,21 +32,21 @@ namespace MicroSTL {
     // --------------- 定义迭代器原型 ---------------
 
     /**
-     * iterator 原型，所有的迭代器都应该实现这个迭代器
+     * _iterator 原型，所有的迭代器都应该实现这个迭代器
      */
     template<typename Category,
             typename T,
             typename Distance = ptrdiff_t,
             typename Pointer = T *,
             typename Reference = T &>
-    struct iterator {
+    struct _iterator {
         /**
          * 迭代器类型，分为五类：
-         * - input iterator：只读
-         * - output iterator：只写
-         * - forward iterator：前向访问，支持读写
-         * - bidirectional iterator：双向访问，支持读写
-         * - random access iterator：随机访问，支持读写
+         * - input _iterator：只读
+         * - output _iterator：只写
+         * - forward _iterator：前向访问，支持读写
+         * - bidirectional _iterator：双向访问，支持读写
+         * - random access _iterator：随机访问，支持读写
          */
         using iterator_category = Category;
         /**

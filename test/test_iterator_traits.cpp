@@ -40,8 +40,8 @@ std::string get_type(ptrdiff_t *) {
     return "ptrdiff_t *";
 }
 
-iterator<output_iterator_tag, int> iter1;
-iterator<forward_iterator_tag, char *> iter2;
+_iterator<output_iterator_tag, int> iter1;
+_iterator<forward_iterator_tag, char *> iter2;
 std::vector<int> iter3;
 
 TEST(iterator_traits, iterator_category) {
