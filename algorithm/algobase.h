@@ -211,6 +211,15 @@ namespace MicroSTL {
         memmove(result - (last - first), first, len);
         return result - (last - first);
     }
+
+    // --------------------- swap --------------------------
+
+    template<typename T>
+    inline void swap(T &a, T &b) {
+        T tmp = a;
+        a = b;
+        b = tmp;
+    }
 }
 
 #endif //MICROSTL_ALGOBASE_H

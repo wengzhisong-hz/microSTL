@@ -4,6 +4,7 @@
 #include "../iterator/iterator.h"
 #include "../memory/alloc.h"
 #include "../memory/construct.h"
+#include "../algorithm/algobase.h"
 
 namespace MicroSTL {
     // --------------------- 双向链表结构 --------------------------
@@ -55,7 +56,7 @@ namespace MicroSTL {
         }
 
         self &operator++() {
-            node = static_cast<link_type >((*node).next);
+            node = link_type((*node).next);
         }
 
         self operator++(int) {
@@ -65,7 +66,7 @@ namespace MicroSTL {
         }
 
         self &operator--() {
-            node = static_cast<link_type >((*node).prev);
+            node = link_type((*node).prev);
         }
 
         self operator--(int) {
@@ -92,7 +93,7 @@ namespace MicroSTL {
         using iterator = list_iterator<T, T &, T *>;
 
         iterator begin() {
-            return static_cast<link_type>((*node).next);
+            return link_type((*node).next);
         }
 
         iterator end() {
@@ -105,7 +106,9 @@ namespace MicroSTL {
 
         size_type size() const {
             size_type result = 0;
-            distance(begin(), end(), result);
+            for (auto first = begin(); first != end(); ++first) {
+                ++result;
+            }
             return result;
         }
 
@@ -116,8 +119,6 @@ namespace MicroSTL {
         reference back() {
             return *(--end());
         }
-
-        void distance(iterator first, iterator last, size_type size);
 
     protected:
         link_type get_node() {
@@ -151,7 +152,7 @@ namespace MicroSTL {
             link_type temp = create_node(obj);
             temp->next = position.node;
             temp->prev = position.node->prev;
-            (static_cast<link_type>(position.node->prev))->next = temp;
+            (link_type(position.node->prev))->next = temp;
             position.node->prev = temp;
             return temp;
         }
@@ -165,12 +166,12 @@ namespace MicroSTL {
         }
 
         iterator erase(iterator position) {
-            link_type next_node = static_cast<link_type>(position.node->next);
-            link_type prev_node = static_cast<link_type>(position.node->prev);
+            link_type next_node = link_type(position.node->next);
+            link_type prev_node = link_type(position.node->prev);
             prev_node->next = next_node;
             next_node->prev = prev_node;
             destroy_node(position.node);
-            return static_cast<iterator>(next_node);
+            return iterator(next_node);
         }
 
         void pop_front() {
@@ -188,16 +189,46 @@ namespace MicroSTL {
         // 移除连续而相同的元素
         void unique();
 
+        // 将[first, last)内的元素移动到position之前
+        void transfer(iterator position, iterator first, iterator last);
+
+        void list_swap(list &obj);
+
     public:
         list() {
             empty_initialize();
         }
+
+        void splice(iterator position, list &obj) {
+            if (!obj.empty()) {
+                transfer(position, obj.begin(), obj.end());
+            }
+        }
+
+        void splice(iterator position, list &, iterator iter_i) {
+            iterator iter_j = iter_i;
+            ++iter_j;
+            if (position == iter_i || position == iter_j) {
+                return;
+            }
+            transfer(position, iter_i, iter_j);
+        }
+
+        void splice(iterator position, list &, iterator first, iterator last) {
+            if (first != last) {
+                transfer(position, first, last);
+            }
+        }
+
+        // 将target 合并到当前list上，两个list的内容需要经过递增排序
+        void merge(list<T> &target);
+
+        // 反转
+        void reverse();
+
+        // 快排方案
+        void sort();
     };
-
-    template<typename T>
-    void list<T>::distance(list::iterator first, list::iterator last, list::size_type size) {
-
-    }
 
     template<typename T>
     void list<T>::remove(const T &value) {
@@ -229,6 +260,102 @@ namespace MicroSTL {
             }
             next = first;
         }
+    }
+
+    template<typename T>
+    void list<T>::transfer(list::iterator position, list::iterator first, list::iterator last) {
+        if (position != last) {
+            (*(link_type((*last.node).prev))).next = position.node;
+            (*(link_type((*first.node).prev))).next = last.node;
+            (*(link_type((*position.node).prev))).next = first.node;
+
+            link_type temp = link_type((*position.node).prev);
+            (*position.node).prev = (*last.node).prev;
+            (*last.node).prev = (*first.node).prev;
+            (*first.node).prev = temp;
+        }
+    }
+
+    template<typename T>
+    void list<T>::merge(list<T> &target) {
+        iterator first1 = begin();
+        iterator last1 = end();
+        iterator first2 = target.begin();
+        iterator last2 = target.end();
+
+        while (first1 != last1 && first2 != last2) {
+            if (*first2 < *first1) {
+                iterator next = first2;
+                transfer(first1, first2, ++next);
+                first2 = next;
+            } else {
+                ++first1;
+            }
+            if (first2 != last2) {
+                transfer(last1, first2, last2);
+            }
+        }
+    }
+
+    template<typename T>
+    void list<T>::reverse() {
+        if (node->next == node || link_type(node->next)->next == node) {
+            return;
+        }
+
+        iterator first = begin();
+        ++first;
+        while (first != end()) {
+            iterator old = first;
+            ++first;
+            transfer(begin(), old, first);
+        }
+    }
+
+    template<typename T>
+    void list<T>::sort() {
+        // 空或者只有一个节点不处理
+        if (node->next == node || link_type(node->next)->next == node) {
+            return;
+        }
+
+        // 暂存
+        list<T> carry;
+        list<T> counter[64];
+
+        int fill = 0;
+
+        while (!empty()) {
+            carry.splice(carry.begin(), *this, begin());
+            int i = 0;
+
+            while (i < fill && !counter[i].empty()) {
+                counter[i].merge(carry);
+                carry.list_swap(counter[i++]);
+            }
+
+            carry.list_swap(counter[i]);
+            if (i == fill) {
+                ++fill;
+            }
+
+            for (int i = 1; i < fill; ++i) {
+                counter[i].merge(counter[i - 1]);
+            }
+
+            swap(counter[fill - 1]);
+        }
+    }
+
+    template<class T>
+    void list<T>::list_swap(list &obj) {
+        iterator head1 = begin();
+        iterator tail1 = end();
+        iterator head2 = obj.begin();
+        iterator tail2 = obj.end();
+
+        swap(head1.node, head2.node);
+        swap(tail1.node, tail2.node);
     }
 }
 
